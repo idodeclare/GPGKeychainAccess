@@ -19,6 +19,10 @@
 
 #import "PreferencesController.h"
 
+@interface PreferencesController ()
+@property (readwrite) GPGOptions *options;
+@end
+
 @implementation PreferencesController
 @synthesize window;
 static PreferencesController *_sharedInstance = nil;
@@ -33,6 +37,8 @@ static PreferencesController *_sharedInstance = nil;
 
 - (id)init {
 	if (self = [super init]) {
+        self.options = [GPGOptions sharedOptions];
+
 		@try {
 			[NSBundle loadNibNamed:@"Preferences" owner:self];
 		}
@@ -41,6 +47,14 @@ static PreferencesController *_sharedInstance = nil;
 		}
 	}
 	return self;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if ([kKeyserver isEqualToString:keyPath]) {
+        [self willChangeValueForKey:kKeyserver];
+        [self didChangeValueForKey:kKeyserver];
+    }
 }
 
 - (IBAction)showPreferences:(id)sender {
@@ -77,7 +91,18 @@ static PreferencesController *_sharedInstance = nil;
 }
 
 - (GPGOptions *)options {
-    return [GPGOptions sharedOptions];
+    return options;
+}
+
+- (void)setOptions:(GPGOptions *)newOptions 
+{
+    if (options) {
+        [options removeObserver:self forKeyPath:kKeyserver];
+        [options release];
+    }
+
+    options = [newOptions retain];
+    [options addObserver:self forKeyPath:kKeyserver options:NSKeyValueObservingOptionNew context:nil];
 }
 
 - (NSArray*)keyservers {

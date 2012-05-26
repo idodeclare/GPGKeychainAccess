@@ -27,6 +27,7 @@
 	IBOutlet NSView *keyserverPreferencesView;
 	IBOutlet NSView *updatesPreferencesView;
 	NSView *view;
+    GPGOptions *options;
 }
 
 @property (assign) IBOutlet NSWindow *window;
